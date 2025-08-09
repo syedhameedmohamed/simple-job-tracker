@@ -1,5 +1,8 @@
-import { sql } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
 import { NextRequest, NextResponse } from 'next/server';
+
+// Create the sql function from neon
+const sql = neon(process.env.DATABASE_URL!);
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -16,7 +19,7 @@ export async function PUT(
 
     // If only status is being updated
     if (Object.keys(body).length === 1 && body.status) {
-      const { rows } = await sql`
+      const rows = await sql`
         UPDATE jobs 
         SET status = ${body.status}
         WHERE id = ${jobId}
@@ -40,7 +43,7 @@ export async function PUT(
       );
     }
 
-    const { rows } = await sql`
+    const rows = await sql`
       UPDATE jobs 
       SET company = ${company}, position = ${position}, link = ${link || ''}, 
           status = ${status}, notes = ${notes || ''}
@@ -67,7 +70,7 @@ export async function DELETE(
     const { id } = await context.params;
     const jobId = parseInt(id);
 
-    const { rows } = await sql`
+    const rows = await sql`
       DELETE FROM jobs 
       WHERE id = ${jobId}
       RETURNING *

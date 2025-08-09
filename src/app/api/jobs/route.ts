@@ -1,9 +1,13 @@
-import { sql } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
 import { NextRequest, NextResponse } from 'next/server';
+
+// Create the sql function from neon
+const sql = neon(process.env.DATABASE_URL!);
 
 export async function GET() {
   try {
-    const { rows } = await sql`
+    // Note: Neon returns results directly, not wrapped in { rows }
+    const rows = await sql`
       SELECT * FROM jobs 
       ORDER BY date_added DESC
     `;
@@ -25,7 +29,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { rows } = await sql`
+    // Note: Neon returns results directly, not wrapped in { rows }
+    const rows = await sql`
       INSERT INTO jobs (company, position, link, status, notes, date_added)
       VALUES (${company}, ${position}, ${link || ''}, ${status}, ${notes || ''}, CURRENT_DATE)
       RETURNING *
