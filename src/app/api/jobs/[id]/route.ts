@@ -1,20 +1,25 @@
 import { sql } from '@vercel/postgres';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
 
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: RouteParams
 ) {
   try {
+    const { id } = await context.params;
     const body = await request.json();
-    const id = parseInt(params.id);
+    const jobId = parseInt(id);
 
     // If only status is being updated
     if (Object.keys(body).length === 1 && body.status) {
       const { rows } = await sql`
         UPDATE jobs 
         SET status = ${body.status}
-        WHERE id = ${id}
+        WHERE id = ${jobId}
         RETURNING *
       `;
 
@@ -39,7 +44,7 @@ export async function PUT(
       UPDATE jobs 
       SET company = ${company}, position = ${position}, link = ${link || ''}, 
           status = ${status}, notes = ${notes || ''}
-      WHERE id = ${id}
+      WHERE id = ${jobId}
       RETURNING *
     `;
 
@@ -55,15 +60,16 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: RouteParams
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id } = await context.params;
+    const jobId = parseInt(id);
 
     const { rows } = await sql`
       DELETE FROM jobs 
-      WHERE id = ${id}
+      WHERE id = ${jobId}
       RETURNING *
     `;
 
