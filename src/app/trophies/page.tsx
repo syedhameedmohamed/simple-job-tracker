@@ -4,6 +4,21 @@ import React, { useState, useEffect } from 'react';
 import { Trophy, Medal, Award, Star, Lock, Calendar, Target, RotateCcw } from 'lucide-react';
 import { trophyDefinitions, useTrophy } from '../contexts/TrophyContext';
 
+interface Job {
+  id: number;
+  company: string;
+  position: string;
+  link: string;
+  status: string;
+  date_added: string;
+  notes: string;
+}
+
+interface UnlockedTrophy {
+  trophy_id: string;
+  unlocked_date: string;
+}
+
 interface TrophyData {
   id: string;
   name: string;
@@ -18,7 +33,7 @@ interface TrophyData {
 }
 
 const TrophiesPage = () => {
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [trophies, setTrophies] = useState<TrophyData[]>(trophyDefinitions);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'bronze' | 'silver' | 'gold' | 'platinum'>('all');
   const { resetAllTrophies, revokeTrophy } = useTrophy();
@@ -62,7 +77,7 @@ const TrophiesPage = () => {
     fetchData();
   }, []);
 
-  const calculateTrophyProgress = (jobsData: any[], unlockedTrophies: any[]) => {
+  const calculateTrophyProgress = (jobsData: Job[], unlockedTrophies: UnlockedTrophy[]) => {
     const totalApplications = jobsData.length;
     const interviews = jobsData.filter(job => 
       ['In Interview', 'Technical Round', 'Final Round', 'Offer'].includes(job.status)

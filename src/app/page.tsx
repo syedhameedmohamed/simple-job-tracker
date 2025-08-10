@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, ExternalLink, Edit3, Trash2, Calendar, Building, Trophy } from 'lucide-react';
 import { useTrophy } from './contexts/TrophyContext';
 
@@ -43,7 +43,7 @@ const JobTracker = () => {
   };
 
   // Fetch jobs from API
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     try {
       const response = await fetch('/api/jobs');
       if (response.ok) {
@@ -63,11 +63,11 @@ const JobTracker = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [trophiesLoaded, checkTrophyUnlocks]);
 
   useEffect(() => {
     fetchJobs();
-  }, []);
+  }, [fetchJobs]);
 
   // Check trophies when trophiesLoaded changes and we have jobs
   useEffect(() => {
@@ -75,7 +75,7 @@ const JobTracker = () => {
       console.log('🎯 Trophies loaded, now checking unlocks for existing jobs');
       checkTrophyUnlocks(jobs);
     }
-  }, [trophiesLoaded]);
+  }, [trophiesLoaded, checkTrophyUnlocks, jobs]);
 
   const handleSubmit = async () => {
     if (!formData.company.trim() || !formData.position.trim()) {

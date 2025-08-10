@@ -25,10 +25,20 @@ interface TrophyContextType {
   notifications: TrophyNotification[];
   addNotification: (trophy: TrophyData) => void;
   removeNotification: (id: string) => void;
-  checkTrophyUnlocks: (jobs: any[]) => Promise<TrophyData[]>;
+  checkTrophyUnlocks: (jobs: Job[]) => Promise<TrophyData[]>;
   resetAllTrophies: () => Promise<void>;
   revokeTrophy: (trophyId: string) => Promise<boolean>;
   trophiesLoaded: boolean;
+}
+
+interface Job {
+  id: number;
+  company: string;
+  position: string;
+  link: string;
+  status: string;
+  date_added: string;
+  notes: string;
 }
 
 const TrophyContext = createContext<TrophyContextType | undefined>(undefined);
@@ -143,7 +153,7 @@ export function TrophyProvider({ children }: { children: ReactNode }) {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  const checkTrophyUnlocks = async (jobs: any[]) => {
+  const checkTrophyUnlocks = async (jobs: Job[]) => {
     // Don't check for unlocks until we've loaded existing trophies from database
     if (!trophiesLoaded) {
       console.log('⏳ Waiting for trophies to load before checking unlocks...');
@@ -169,7 +179,7 @@ export function TrophyProvider({ children }: { children: ReactNode }) {
     const now = new Date().getTime();
 
     // Check for trophies that should be revoked (grace period)
-    const unlockedTrophies = await fetch('/api/trophies').then(res => res.json()).catch(() => []);
+    const unlockedTrophies: { trophy_id: string; unlocked_at: string; created_at: string }[] = await fetch('/api/trophies').then(res => res.json()).catch(() => []);
     
     for (const unlockedTrophy of unlockedTrophies) {
       const trophy = trophyDefinitions.find(t => t.id === unlockedTrophy.trophy_id);
