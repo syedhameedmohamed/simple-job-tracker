@@ -17,7 +17,7 @@ export async function PUT(
     const body = await request.json();
     const jobId = parseInt(id);
 
-    // If only status is being updated
+    // If only status is being updated 
     if (Object.keys(body).length === 1 && body.status) {
       const rows = await sql`
         UPDATE jobs 
