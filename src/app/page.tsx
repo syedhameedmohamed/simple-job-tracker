@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, ExternalLink, Edit3, Trash2, Calendar, Building, Trophy } from 'lucide-react';
+import { useTrophy } from './contexts/TrophyContext';
 
 interface Job {
   id: number;
@@ -26,6 +27,8 @@ const JobTracker = () => {
     notes: ''
   });
 
+  const { checkTrophyUnlocks, trophiesLoaded } = useTrophy();
+
   const statuses = ['Applied', 'In Review', 'In Interview', 'Technical Round', 'Final Round', 'Offer', 'Rejected', 'Withdrawn'];
 
   const statusColors = {
@@ -45,7 +48,15 @@ const JobTracker = () => {
       const response = await fetch('/api/jobs');
       if (response.ok) {
         const data = await response.json();
+        console.log('📥 Fetched jobs:', data.length);
         setJobs(data);
+        
+        // Only check for trophy unlocks if trophies have been loaded
+        if (trophiesLoaded) {
+          checkTrophyUnlocks(data);
+        } else {
+          console.log('⏳ Delaying trophy check until trophies are loaded');
+        }
       }
     } catch (error) {
       console.error('Error fetching jobs:', error);
@@ -58,11 +69,21 @@ const JobTracker = () => {
     fetchJobs();
   }, []);
 
+  // Check trophies when trophiesLoaded changes and we have jobs
+  useEffect(() => {
+    if (trophiesLoaded && jobs.length > 0) {
+      console.log('🎯 Trophies loaded, now checking unlocks for existing jobs');
+      checkTrophyUnlocks(jobs);
+    }
+  }, [trophiesLoaded]);
+
   const handleSubmit = async () => {
     if (!formData.company.trim() || !formData.position.trim()) {
       alert('Please fill in company and position fields');
       return;
     }
+
+    console.log('🚀 Submitting job:', formData);
 
     try {
       const url = editingJob ? `/api/jobs/${editingJob.id}` : '/api/jobs';
@@ -77,7 +98,8 @@ const JobTracker = () => {
       });
 
       if (response.ok) {
-        await fetchJobs(); // Refresh the list
+        console.log('✅ Job saved successfully');
+        await fetchJobs(); // This will trigger trophy checking
         resetForm();
       } else {
         alert('Error saving job');
@@ -108,7 +130,7 @@ const JobTracker = () => {
         });
 
         if (response.ok) {
-          await fetchJobs(); // Refresh the list
+          await fetchJobs(); // This will trigger trophy checking
         } else {
           alert('Error deleting job');
         }
@@ -120,6 +142,8 @@ const JobTracker = () => {
   };
 
   const handleStatusChange = async (id: number, newStatus: string) => {
+    console.log('🔄 Changing status for job', id, 'to', newStatus);
+    
     try {
       const response = await fetch(`/api/jobs/${id}`, {
         method: 'PUT',
@@ -130,7 +154,8 @@ const JobTracker = () => {
       });
 
       if (response.ok) {
-        await fetchJobs(); // Refresh the list
+        console.log('✅ Status updated successfully');
+        await fetchJobs(); // This will trigger trophy checking
       } else {
         alert('Error updating status');
       }
@@ -176,7 +201,7 @@ const JobTracker = () => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]"></div>
       <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_48%,rgba(59,130,246,0.03)_49%,rgba(59,130,246,0.03)_51%,transparent_52%)] bg-[length:20px_20px]"></div>
       
-      <div className="relative z-10 max-w-6xl mx-auto p-6">
+      <div className="relative z-10 max-w-6xl mx-auto p-6 pl-24">
         {/* Header */}
         <div className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 mb-8 shadow-2xl">
           <div className="flex justify-between items-center">
@@ -188,7 +213,7 @@ const JobTracker = () => {
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                   Job Tracker
                 </h1>
-                <p className="text-slate-300 mt-1">Track your job applications and interview progress</p>
+                <p className="text-slate-300 mt-1">Track your job applications and unlock achievements</p>
               </div>
             </div>
             <button
@@ -313,7 +338,7 @@ const JobTracker = () => {
             <div className="bg-gradient-to-br from-slate-800/60 to-slate-700/60 backdrop-blur-sm rounded-2xl border border-slate-600/30 p-12 text-center shadow-xl">
               <Building size={64} className="mx-auto text-slate-500 mb-6" />
               <h3 className="text-2xl font-semibold text-slate-300 mb-3">No job applications yet</h3>
-              <p className="text-slate-400 mb-6">Start tracking your job applications by adding your first job!</p>
+              <p className="text-slate-400 mb-6">Start tracking your job applications and unlock your first trophy!</p>
               <button
                 onClick={() => setShowForm(true)}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"

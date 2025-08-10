@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Navigation from "./components/Navigation";
+import { TrophyProvider } from "./contexts/TrophyContext";
+import TrophyNotifications from "./components/TrophyNotification";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,7 +26,11 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased`}
       >
-        {children}
+        <TrophyProvider>
+          <Navigation />
+          <TrophyNotifications />
+          {children}
+        </TrophyProvider>
       </body>
     </html>
   );
