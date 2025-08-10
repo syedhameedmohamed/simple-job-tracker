@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Award, Star, Lock, Calendar, Target, RotateCcw } from 'lucide-react';
+import { Trophy, Medal, Award, Lock, Calendar, Target, RotateCcw } from 'lucide-react';
 import { trophyDefinitions, useTrophy } from '../contexts/TrophyContext';
 
 interface Job {
@@ -33,7 +33,6 @@ interface TrophyData {
 }
 
 const TrophiesPage = () => {
-  const [jobs, setJobs] = useState<Job[]>([]);
   const [trophies, setTrophies] = useState<TrophyData[]>(trophyDefinitions);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'bronze' | 'silver' | 'gold' | 'platinum'>('all');
   const { resetAllTrophies, revokeTrophy } = useTrophy();
@@ -67,7 +66,7 @@ const TrophiesPage = () => {
         const trophiesResponse = await fetch('/api/trophies');
         const unlockedTrophies = trophiesResponse.ok ? await trophiesResponse.json() : [];
         
-        setJobs(jobsData);
+        // We don't need to store jobs in state, just use them for calculation
         calculateTrophyProgress(jobsData, unlockedTrophies);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -278,7 +277,7 @@ const TrophiesPage = () => {
           {['all', 'bronze', 'silver', 'gold', 'platinum'].map((category) => (
             <button
               key={category}
-              onClick={() => setSelectedCategory(category as any)}
+              onClick={() => setSelectedCategory(category as 'all' | 'bronze' | 'silver' | 'gold' | 'platinum')}
               className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 capitalize ${
                 selectedCategory === category
                   ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
