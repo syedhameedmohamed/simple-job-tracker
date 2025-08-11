@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Home, Trophy } from 'lucide-react';
+import { Menu, X, Home, Trophy, FileText } from 'lucide-react';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,6 +19,11 @@ const Navigation = () => {
       name: 'Trophies',
       href: '/trophies',
       icon: Trophy,
+    },
+    {
+      name: 'Resume Editor',
+      href: '/resume',
+      icon: FileText, // You'll need to import this from lucide-react
     },
   ];
 
